@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Echo Projects</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    :root {
+      --bg: #0b1220;
+      --panel: #111827;
+      --nav: #0f172a;
+      --accent: #38bdf8;
+      --text: #e5e7eb;
+      --muted: #94a3b8;
+      --primary: #2563eb;
+    }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+    }
+    header {
+      background: var(--nav);
+      border-bottom: 1px solid #0b132b;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+    .nav {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 16px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 700;
+      color: var(--accent);
+    }
+    .brand .logo {
+      width: 28px;
+      height: 28px;
+      border-radius: 6px;
+      background: linear-gradient(135deg, #2563eb 0%, #38bdf8 100%);
+      box-shadow: 0 0 12px rgba(56,189,248,0.35);
+    }
+    nav a {
+      color: var(--text);
+      text-decoration: none;
+      margin-left: 20px;
+      font-weight: 600;
+      opacity: 0.85;
+    }
+    nav a:hover {
+      color: var(--accent);
+      opacity: 1;
+    }
+    main {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 28px 20px 40px;
+    }
+    h1 {
+      font-size: 2rem;
+      margin-bottom: 12px;
+      color: var(--accent);
+    }
+    .chat-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .chat-item {
+      background: var(--panel);
+      border: 1px solid #0b132b;
+      border-radius: 12px;
+      padding: 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .chat-item span {
+      cursor: pointer;
+    }
+    .chat-item button {
+      background: #dc2626;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      padding: 6px 10px;
+      cursor: pointer;
+    }
+    .chat-item button:hover {
+      background: #b91c1c;
+    }
+    .chat-view {
+      margin-top: 20px;
+      background: var(--panel);
+      border: 1px solid #0b132b;
+      border-radius: 12px;
+      padding: 20px;
+      display: none;
+    }
+    .message {
+      margin-bottom: 12px;
+    }
+    .message .role {
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+    .message .bubble {
+      background: #0d1426;
+      border: 1px solid #0b132b;
+      border-radius: 10px;
+      padding: 10px;
+      line-height: 1.6;
+    }
+    .message.you .bubble {
+      background: var(--primary);
+      color: white;
+    }
+    .continue-btn {
+      margin-top: 12px;
+      background: var(--primary);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      padding: 10px 14px;
+      cursor: pointer;
+    }
+    .continue-btn:hover {
+      background: #1d4ed8;
+    }
+    footer {
+      margin-top: 28px;
+      padding: 18px 20px;
+      text-align: center;
+      color: var(--muted);
+      border-top: 1px solid #0b132b;
+      background: var(--nav);
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="nav">
+      <div class="brand"><div class="logo"></div><div>Echo</div></div>
+      <nav>
+        <a href="dashboard.html">Dashboard</a>
+        <a href="projects.html">Projects</a>
+        <a href="about.html">About</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <h1>Projects (Chat History)</h1>
+    <div class="chat-list" id="chatList"></div>
+
+    <div class="chat-view" id="chatView">
+      <h2>Conversation Details</h2>
+      <div id="chatContent"></div>
+      <button class="continue-btn" id="continueBtn">Continue Chat</button>
+    </div>
+  </main>
+
+  <footer>© 2025 Echo AI — Designed for developers</footer>
+
+  <script>
+    let currentChatId = null;
+
+    async function loadChats() {
+      const res = await fetch("/api/chats");
+      const chats = await res.json();
+      const list = document.getElementById("chatList");
+      list.innerHTML = "";
+
+      chats.forEach(chat => {
+        const item = document.createElement("div");
+        item.className = "chat-item";
+
+        const title = document.createElement("span");
+        title.textContent = `Conversation on ${new Date(chat.timestamp).toLocaleString()}`;
+        title.addEventListener("click", () => openChat(chat.id));
+
+        const delBtn = document.createElement("button");
+        delBtn.textContent = "Delete";
+        delBtn.addEventListener("click", async (e) => {
+          e.stopPropagation();
+          if (confirm("Delete this chat permanently?")) {
+            await fetch(`/api/chats/${chat.id}`, { method: "DELETE" });
+            loadChats();
+            document.getElementById("chatView").style.display = "none";
+          }
+        });
+
+        item.appendChild(title);
+        item.appendChild(delBtn);
+        list.appendChild(item);
+      });
+    }
+
+    async function openChat(id) {
+      const res = await fetch(`/api/chats/${id}`);
+      const chat = await res.json();
+      const view = document.getElementById("chatView");
+      const content = document.getElementById("chatContent");
+      content.innerHTML = "";
+
+      chat.conversation.forEach(msg => {
+        const div = document.createElement("div");
+        div.className = "message " + (msg.role === "user" ? "you" : "echo");
+        div.innerHTML = `<div class="role">${msg.role === "user" ? "You" : "Echo"}</div>
+                         <div class="bubble">${msg.content}</div>`;
+        content.appendChild(div);
+      });
+
+      view.style.display = "block";
+      currentChatId = id;
+    }
+
+    document.getElementById("continueBtn").addEventListener("click", () => {
+      if (currentChatId) {
+        // Redirect to home.html with chat ID
+        window.location.href = `home.html?chatId=${currentChatId}`;
+      }
+    });
+
+    loadChats();
+  </script>
+</body>
+</html>

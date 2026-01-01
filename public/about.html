@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>About Echo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    :root {
+      --bg: #0b1220;
+      --panel: #111827;
+      --nav: #0f172a;
+      --accent: #38bdf8;
+      --text: #e5e7eb;
+      --muted: #94a3b8;
+      --primary: #2563eb;
+    }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+    }
+    header {
+      background: var(--nav);
+      border-bottom: 1px solid #0b132b;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+    .nav {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 16px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 700;
+      color: var(--accent);
+    }
+    .brand .logo {
+      width: 28px;
+      height: 28px;
+      border-radius: 6px;
+      background: linear-gradient(135deg, #2563eb 0%, #38bdf8 100%);
+      box-shadow: 0 0 12px rgba(56,189,248,0.35);
+    }
+    nav a {
+      color: var(--text);
+      text-decoration: none;
+      margin-left: 20px;
+      font-weight: 600;
+      opacity: 0.85;
+    }
+    nav a:hover {
+      color: var(--accent);
+      opacity: 1;
+    }
+    main {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 28px 20px 40px;
+    }
+    h1 {
+      font-size: 2rem;
+      margin-bottom: 12px;
+      color: var(--accent);
+    }
+    h2 {
+      margin-top: 24px;
+      font-size: 1.4rem;
+      color: var(--accent);
+    }
+    p {
+      line-height: 1.6;
+      color: var(--text);
+    }
+    ul {
+      margin-top: 10px;
+      padding-left: 20px;
+    }
+    li {
+      margin-bottom: 8px;
+      color: var(--text);
+    }
+    footer {
+      margin-top: 28px;
+      padding: 18px 20px;
+      text-align: center;
+      color: var(--muted);
+      border-top: 1px solid #0b132b;
+      background: var(--nav);
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="nav">
+      <div class="brand"><div class="logo"></div><div>Echo</div></div>
+      <nav>
+        <a href="dashboard.html">Dashboard</a>
+        <a href="projects.html">Projects</a>
+        <a href="about.html">About</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <h1>About Echo</h1>
+    <p>Echo is your futuristic AI assistant designed to help with coding, programming, and web development. It combines a clean interface with real-time streaming responses so you can interact naturally, just like chatting with a teammate.</p>
+
+    <h2>What Echo Does</h2>
+    <ul>
+      <li>Answers coding and development questions in real time.</li>
+      <li>Streams responses so you see answers as they’re generated.</li>
+      <li>Supports Markdown rendering for code, lists, and formatting.</li>
+      <li>Keeps conversation history so replies stay in context.</li>
+      <li>Provides copy buttons on code blocks for quick reuse.</li>
+    </ul>
+
+    <h2>What Echo Doesn’t Do</h2>
+    <ul>
+      <li>It doesn’t replace your IDE or compiler — it’s a helper, not a full dev environment.</li>
+      <li>It doesn’t store private data or files unless you explicitly save them elsewhere.</li>
+      <li>It doesn’t guarantee bug-free code — always test and review before deploying.</li>
+    </ul>
+
+    <h2>How to Use Echo</h2>
+    <ul>
+      <li>Type your question or prompt in the chat box.</li>
+      <li>Press <strong>Enter</strong> to send, or <strong>Shift+Enter</strong> to add a newline.</li>
+      <li>Watch Echo’s reply stream in from the left side.</li>
+      <li>Copy code snippets directly using the “Copy” button.</li>
+      <li>Use the Refresh button to clear the chat and start fresh.</li>
+    </ul>
+
+    <p>Echo is built to make your workflow smoother, faster, and more enjoyable. Think of it as a coding companion that’s always ready to help.</p>
+  </main>
+
+  <footer>© 2025 Echo AI — Designed for developers</footer>
+</body>
+</html>

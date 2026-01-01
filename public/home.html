@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Echo — Your futuristic AI assistant</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <style>
+    :root {
+      --bg: #0b1220;
+      --panel: #111827;
+      --nav: #0f172a;
+      --accent: #38bdf8;
+      --text: #e5e7eb;
+      --muted: #94a3b8;
+      --primary: #2563eb;
+      --primary-hover: #1d4ed8;
+      --code-bg: #0f172a;
+    }
+    body { margin:0; background:var(--bg); color:var(--text); font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial; }
+    header { background:var(--nav); border-bottom:1px solid #0b132b; position:sticky; top:0; z-index:10; }
+    .nav { max-width:1100px; margin:0 auto; padding:16px 20px; display:flex; align-items:center; justify-content:space-between; }
+    .brand { display:flex; align-items:center; gap:10px; font-weight:700; color:var(--accent); }
+    .brand .logo { width:28px; height:28px; border-radius:6px; background:linear-gradient(135deg,#2563eb 0%,#38bdf8 100%); box-shadow:0 0 12px rgba(56,189,248,0.35); }
+    nav a { color:var(--text); text-decoration:none; margin-left:20px; font-weight:600; opacity:0.85; }
+    nav a:hover { color:var(--accent); opacity:1; }
+    main { max-width:1100px; margin:0 auto; padding:28px 20px 160px; }
+    .chat { background:var(--panel); border:1px solid #0b132b; border-radius:16px; padding:20px; min-height:400px; }
+    .message { display:flex; margin-bottom:16px; }
+    .bubble { max-width:70%; padding:12px 14px; border-radius:12px; line-height:1.6; }
+    .message.user { justify-content:flex-end; }
+    .message.user .bubble { background:var(--primary); color:white; border-radius:12px 12px 0 12px; }
+    .message.echo { justify-content:flex-start; }
+    .message.echo .bubble { background:#0d1426; border:1px solid #0b132b; color:var(--text); border-radius:12px 12px 12px 0; }
+    pre { background:var(--code-bg); color:var(--text); padding:12px; border-radius:8px; overflow-x:auto; position:relative; }
+    code { font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace; }
+    .copy-btn { position:absolute; top:6px; right:6px; background:var(--primary); color:white; border:none; padding:4px 8px; border-radius:6px; cursor:pointer; font-size:0.75rem; }
+
+    .chat-controls-footer {
+      position:fixed;
+      bottom:0;
+      left:0;
+      width:100%;
+      background:var(--nav);
+      border-top:1px solid #0b132b;
+      padding:12px 20px;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      gap:10px;
+      z-index:10;
+    }
+
+    .chat-controls {
+      display:flex;
+      gap:10px;
+      width:100%;
+      max-width:800px;
+    }
+
+    .chat-controls textarea#prompt {
+      flex:1;
+      padding:12px 14px;
+      border-radius:10px;
+      border:1px solid #0b132b;
+      background:#0d1426;
+      color:var(--text);
+      outline:none;
+      resize:none;
+      line-height:1.4;
+    }
+
+    .chat-controls textarea#prompt::placeholder {
+      color:#64748b;
+    }
+
+    .btn {
+      padding:12px 16px;
+      border:none;
+      border-radius:10px;
+      font-weight:700;
+      cursor:pointer;
+    }
+
+    .btn-primary {
+      background:var(--primary);
+      color:white;
+    }
+
+    .btn-primary:hover {
+      background:var(--primary-hover);
+    }
+
+    .btn-secondary {
+      background:#0d1426;
+      color:var(--text);
+      border:1px solid #0b132b;
+    }
+
+    footer {
+      color:var(--muted);
+      font-size:0.85rem;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="nav">
+      <div class="brand"><div class="logo"></div><div>Echo</div></div>
+      <nav>
+        <a href="dashboard.html">Dashboard</a>
+        <a href="projects.html">Projects</a>
+        <a href="about.html">About</a>
+      </nav>
+    </div>
+  </header>
+  <main>
+    <section class="chat" id="chat"></section>
+  </main>
+  <div class="chat-controls-footer">
+    <div class="chat-controls">
+      <textarea id="prompt" placeholder="Ask Echo anything..." rows="2"></textarea>
+      <button id="send" class="btn btn-primary">Send</button>
+      <button id="refresh" class="btn btn-secondary">Refresh</button>
+    </div>
+    <footer>© 2026 Echo AI — Designed for developers</footer>
+  </div>
+
+<script>
+let conversation = [];
+
+async function askEcho() {
+  const inputEl = document.getElementById("prompt");
+  const userInput = inputEl.value.trim();
+  if (!userInput) return;
+
+  // Add user message
+  conversation.push({ role: "user", content: userInput });
+  addMessage("user", userInput);
+
+  // Clear input after sending
+  inputEl.value = "";
+
+  // Create assistant bubble
+  const echoBubble = addMessage("echo", "...");
+  echoBubble.innerHTML = "";
+
+  try {
+    const res = await fetch("/api/ask", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ conversation })
+    });
+
+    if (!res.body) {
+      echoBubble.innerHTML = "No stream received.";
+      return;
+    }
+
+    const reader = res.body.getReader();
+    const decoder = new TextDecoder();
+    let fullReply = "";
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+
+      const chunk = decoder.decode(value, { stream: true });
+      for (const line of chunk.split("\n")) {
+        const trimmed = line.trim();
+        if (!trimmed) continue;
+
+        if (trimmed.startsWith("data:")) {
+          try {
+            const json = JSON.parse(trimmed.slice(5).trim());
+            if (json.content) {
+              fullReply += json.content;
+              const cleanReply = fullReply.replace(/^# .*\n?/gm, "");
+              echoBubble.innerHTML = marked.parse(cleanReply);
+            }
+          } catch {
+            // ignore bad JSON
+          }
+        }
+      }
+    }
+
+    conversation.push({ role: "assistant", content: fullReply });
+    addCopyButtons();
+  } catch (err) {
+    echoBubble.innerHTML = "Error: " + err.message;
+  }
+}
+
+// Helper to add messages to chat
+function addMessage(role, content) {
+  const chat = document.getElementById("chat");
+  const msg = document.createElement("div");
+  msg.className = "message " + role;
+
+  const bubble = document.createElement("div");
+  bubble.className = "bubble";
+  bubble.innerHTML = marked.parse(content);
+
+  msg.appendChild(bubble);
+  chat.appendChild(msg);
+  chat.scrollTop = chat.scrollHeight;
+  return bubble;
+}
+
+// Add copy buttons to code blocks
+function addCopyButtons() {
+  const blocks = document.querySelectorAll("pre");
+  blocks.forEach(block => {
+    if (block.querySelector(".copy-btn")) return;
+    const btn = document.createElement("button");
+    btn.className = "copy-btn";
+    btn.textContent = "Copy";
+    btn.onclick = () => {
+      navigator.clipboard.writeText(block.innerText);
+      btn.textContent = "Copied!";
+      setTimeout(() => (btn.textContent = "Copy"), 1500);
+    };
+    block.appendChild(btn);
+  });
+}
+
+// Clear chat
+function refreshChat() {
+  document.getElementById("chat").innerHTML = "";
+  conversation = [];
+}
+
+// Wire up buttons and Enter key
+document.getElementById("send").addEventListener("click", askEcho);
+document.getElementById("prompt").addEventListener("keydown", e => {
+  if (e.key === "Enter" && !e.shiftKey) {
+    e.preventDefault();
+    askEcho();
+  }
+});
+document.getElementById("refresh").addEventListener("click", refreshChat);
+</script>
+</body>
+</html>

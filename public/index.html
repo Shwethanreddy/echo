@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Echo Boot</title>
+  <style>
+    body {
+      margin: 0;
+      height: 100vh;
+      background-color: #050514;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      font-family: Arial, sans-serif;
+      overflow: hidden;
+    }
+    .logo {
+      width: 220px;
+      height: 220px;
+      border: 6px solid #00b4ff;
+      position: relative;
+      opacity: 0;
+      transition: opacity 2s ease-in;
+      box-shadow: 0 0 20px #00b4ff, 0 0 40px #00b4ff;
+      animation: wave 6s infinite ease-in-out;
+      border-radius: 40px;
+    }
+    .helmet {
+      width: 120px; height: 60px; background: #00b4ff;
+      position: absolute; left: 50%; top: 50%;
+      transform: translate(-50%, -60%);
+      border-top-left-radius: 120px; border-top-right-radius: 120px;
+      box-shadow: 0 0 18px #00b4ff;
+    }
+    .base {
+      width: 70px; height: 12px; background: #00b4ff;
+      position: absolute; left: 50%; top: calc(50% + 10px);
+      transform: translateX(-50%); border-radius: 8px;
+      box-shadow: 0 0 12px #00b4ff;
+    }
+    .text {
+      margin-top: 42px; font-size: 82px; font-weight: bold;
+      color: white; letter-spacing: 2px; opacity: 0;
+      transition: opacity 2s ease-in 0.6s;
+    }
+    .show { opacity: 1; }
+    @keyframes wave {
+      0%   { border-radius: 50% 50% 50% 50% / 50% 50% 50% 50%; }
+      25%  { border-radius: 60% 40% 60% 40% / 40% 60% 40% 60%; }
+      50%  { border-radius: 40% 60% 40% 60% / 60% 40% 60% 40%; }
+      75%  { border-radius: 70% 30% 70% 30% / 30% 70% 30% 70%; }
+      100% { border-radius: 50% 50% 50% 50% / 50% 50% 50% 50%; }
+    }
+  </style>
+</head>
+<body>
+  <div class="logo" id="logo">
+    <div class="helmet"></div>
+    <div class="base"></div>
+  </div>
+  <div class="text" id="text">ECHO</div>
+
+  <script>
+    window.onload = () => {
+      document.getElementById("logo").classList.add("show");
+      document.getElementById("text").classList.add("show");
+      setTimeout(() => { window.location.href = "home.html"; }, 3500);
+    };
+  </script>
+</body>
+</html>
